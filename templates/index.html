@@ -1,45 +1,29 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Форма користувача</title>
-</head>
-<body>
+<h1>Додати користувача</h1>
 
-<h2>Введіть дані користувача</h2>
+<label>Ім’я:</label><br>
+<input id="name"><br><br>
 
-<form id="userForm">
-    <label>Імʼя:</label><br>
-    <input type="text" id="name" required><br><br>
+<label>Вік:</label><br>
+<input id="age" type="number"><br><br>
 
-    <label>Вік:</label><br>
-    <input type="number" id="age" required><br><br>
+<button onclick="sendData()">Додати</button>
 
-    <button type="submit">Надіслати</button>
-</form>
-
-<h3>Відповідь сервера:</h3>
 <pre id="response"></pre>
 
 <script>
-document.getElementById("userForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+async function sendData() {
+    const name = document.getElementById("name").value;
+    const age = document.getElementById("age").value;
 
-    const data = {
-        name: document.getElementById("name").value,
-        age: document.getElementById("age").value
-    };
-
-    const response = await fetch("/api/data", {
+    const res = await fetch("/api/users", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, age})
     });
 
-    const result = await response.json();
-    document.getElementById("response").textContent = JSON.stringify(result, null, 2);
-});
+    document.getElementById("response").textContent =
+        JSON.stringify(await res.json(), null, 2);
+}
 </script>
 
-</body>
-</html>
+<a href="/users">Переглянути всіх користувачів</a>
