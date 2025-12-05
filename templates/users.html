@@ -1,47 +1,42 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Список користувачів</title>
-</head>
-<body>
-<h2>Список користувачів</h2>
+<h1>Список користувачів</h1>
 
-<table border="1" cellpadding="8">
+<table border="1" cellpadding="5">
     <thead>
         <tr>
             <th>ID</th>
-            <th>Імʼя</th>
+            <th>Ім’я</th>
             <th>Вік</th>
             <th>Дії</th>
         </tr>
     </thead>
-    <tbody id="table-body"></tbody>
+    <tbody id="table"></tbody>
 </table>
 
 <script>
+// --- Завантаження списку ---
 async function loadUsers() {
     const res = await fetch("/api/users");
-    const data = await res.json();
+    const users = await res.json();
 
-    const tbody = document.getElementById("table-body");
+    const tbody = document.getElementById("table");
     tbody.innerHTML = "";
 
-    data.forEach(user => {
+    users.forEach(u => {
         tbody.innerHTML += `
             <tr>
-                <td>${user.id}</td>
-                <td><input id="name-${user.id}" value="${user.name}"></td>
-                <td><input id="age-${user.id}" type="number" value="${user.age}"></td>
+                <td>${u.id}</td>
+                <td><input value="${u.name}" id="name-${u.id}"></td>
+                <td><input value="${u.age}" id="age-${u.id}" type="number"></td>
                 <td>
-                    <button onclick="updateUser(${user.id})">Зберегти</button>
-                    <button onclick="deleteUser(${user.id})">Видалити</button>
+                    <button onclick="updateUser(${u.id})">💾 Зберегти</button>
+                    <button onclick="deleteUser(${u.id})">❌ Видалити</button>
                 </td>
             </tr>
         `;
     });
 }
 
+// --- Оновлення ---
 async function updateUser(id) {
     const name = document.getElementById(`name-${id}`).value;
     const age = document.getElementById(`age-${id}`).value;
@@ -52,16 +47,19 @@ async function updateUser(id) {
         body: JSON.stringify({name, age})
     });
 
-    alert("Оновлено!");
+    loadUsers();
 }
 
+// --- Видалення ---
 async function deleteUser(id) {
-    await fetch(`/api/users/${id}`, { method: "DELETE" });
-    alert("Видалено!");
+    await fetch(`/api/users/${id}`, {
+        method: "DELETE"
+    });
+
     loadUsers();
 }
 
 loadUsers();
 </script>
-</body>
-</html>
+
+<a href="/">Додати нового користувача</a>
