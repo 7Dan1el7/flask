@@ -1,24 +1,20 @@
 from flask import Flask, request, jsonify
 import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
+import psycopg
 
 app = Flask(__name__)
 
-# ФУНКЦІЯ ПІДКЛЮЧЕННЯ ДО БАЗИ
+# Підключення до бази (psycopg3)
 def get_db_connection():
-    # DATABASE_URL автоматично підставляється Railway
-    conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode="require")
+    conn = psycopg.connect(os.getenv("DATABASE_URL"))
     return conn
 
 
-# Головна сторінка
 @app.route("/")
 def home():
-    return "Сервер працює! База даних підключена ✔️"
+    return "Сервер працює! PostgreSQL підключено ✔"
 
 
-# --- СТВОРЕННЯ ТАБЛИЦІ ---
 @app.route("/create_table")
 def create_table():
     conn = get_db_connection()
@@ -33,10 +29,9 @@ def create_table():
     conn.commit()
     cur.close()
     conn.close()
-    return "Таблиця users створена ✔️"
+    return "Таблиця users створена ✔"
 
 
-# --- ДОДАВАННЯ КОРИСТУВАЧА ---
 @app.route("/add_user", methods=["POST"])
 def add_user():
     data = request.json
@@ -56,31 +51,25 @@ def add_user():
     return jsonify({"status": "ok", "message": "Користувача додано"})
 
 
-# --- ОТРИМАННЯ ВСІХ КОРИСТУВАЧІВ ---
-@app.route("/users", methods=["GET"])
+@app.route("/users")
 def get_users():
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     cur.execute("SELECT * FROM users;")
-    users = cur.fetchall()
+    rows = cur.fetchall()
+    users = [{"id": r[0], "name": r[1], "age": r[2]} for r in rows]
     cur.close()
     conn.close()
     return jsonify(users)
 
 
-# --- ТВОЄ ТЕСТОВЕ API /api/data — залишаю теж ---
 @app.route("/api/data", methods=["POST"])
 def handle_data():
     data = request.json
-    name = data.get("name")
-    age = data.get("age")
-
-    response = {
-        "message": f"Привіт, {name}! Тобі {age} років.",
+    return jsonify({
+        "message": f"Привіт, {data['name']}! Тобі {data['age']} років.",
         "status": "success"
-    }
-
-    return jsonify(response)
+    })
 
 
 if __name__ == "__main__":
