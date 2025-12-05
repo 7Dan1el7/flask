@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Список користувачів</title>
+</head>
+<body>
+<h2>Список користувачів</h2>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Імʼя</th>
+            <th>Вік</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+</table>
+
+<script>
+async function loadUsers() {
+    const res = await fetch("/api/users");
+    const data = await res.json();
+
+    const tbody = document.getElementById("table-body");
+    tbody.innerHTML = "";
+
+    data.forEach(user => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${user.id}</td>
+                <td><input id="name-${user.id}" value="${user.name}"></td>
+                <td><input id="age-${user.id}" type="number" value="${user.age}"></td>
+                <td>
+                    <button onclick="updateUser(${user.id})">Зберегти</button>
+                    <button onclick="deleteUser(${user.id})">Видалити</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function updateUser(id) {
+    const name = document.getElementById(`name-${id}`).value;
+    const age = document.getElementById(`age-${id}`).value;
+
+    await fetch(`/api/users/${id}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, age})
+    });
+
+    alert("Оновлено!");
+}
+
+async function deleteUser(id) {
+    await fetch(`/api/users/${id}`, { method: "DELETE" });
+    alert("Видалено!");
+    loadUsers();
+}
+
+loadUsers();
+</script>
+</body>
+</html>
